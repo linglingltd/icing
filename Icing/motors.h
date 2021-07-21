@@ -37,6 +37,14 @@
 #define ZEN      A8
 #define ZDIR     48
 
+#define E0STEP   26
+#define E0EN     24
+#define E0DIR    28
+
+#define E1STEP   36
+#define E1EN     30
+#define E1DIR    34
+
 #define X_STEPS_PER_MM  3200
 #define Y_STEPS_PER_MM  164
 
