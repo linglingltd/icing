@@ -24,6 +24,7 @@ void setup() {
   disableMotors();
 
   digitalWrite(FAN, HIGH);
+  //digitalWrite(PELTIER, HIGH);
 
   
   Serial.print("\n");
@@ -54,20 +55,54 @@ void setup() {
 uint16_t steps = 0, i = 300;
 
 uint8_t j = 0;
+char rcvc = 0, rcv[20] = {0};
+uint8_t rcvct = 0;
 void loop() {
-  uint32_t steps;
-  homeMotor('X', 10);
-  moveMotor('X', 0, 200*16, 10);
-  homeMotor('X', 50);
-  for(uint8_t i=0;i<60;i++) {
-    steps = homeMotor('Z', 50);
-    moveMotor('Z', 0, steps, 50);
-    Serial.print((int32_t)steps-(3*200*32));
-    Serial.print("\t");
-    moveMotor('X', 0, 200*32, 25);
+  while(Serial.available()) {
+    rcvc = Serial.read();
+    if(rcvc == '\n') {
+      Serial.print(rcv);
+      if(0 == strcmp(rcv, "P=1")) {
+        digitalWrite(PELTIER, HIGH);
+        Serial.print("P set to 1\n");
+      } else if(0 == strcmp(rcv, "P=0")) {
+        digitalWrite(PELTIER, LOW);
+        Serial.print("P set to 0\n");
+      } else if(0 == strcmp(rcv, "X-Sweep")) {
+        j = 1;
+        Serial.print("Starting X-Sweep\n");
+      } else {
+        // Nope
+      }
+      
+      while(rcvct > 0) {
+        rcv[rcvct-1] = 0;
+        rcvct--;
+      }
+    }
+    else if(rcvct < 19) {
+      rcv[rcvct] = rcvc;
+      rcvct++;
+    }
   }
-  Serial.print("\n");
-  delay(1000);
+  if(j == 1) {
+    j = 0;
+    uint32_t steps;
+    homeMotor('X', 10);
+    moveMotor('X', 0, 200*16, 10);
+    homeMotor('X', 50);
+    for(uint8_t i=0;i<60;i++) {
+      steps = homeMotor('Z', 50);
+      moveMotor('Z', 0, steps, 50);
+      Serial.print((int32_t)steps-(3*200*32));
+      Serial.print("\t");
+      moveMotor('X', 0, 200*32, 25);
+    }
+    Serial.print("\n");
+  } else {
+    //disableMotors();
+  }
+  delay(100);
 }
 
 void printHeading(void) {
