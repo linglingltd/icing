@@ -26,9 +26,18 @@ z = -np.float_(z)
 n = (len(z)-1) * len(z[0])
 diff = 0
 lostmap = np.array([])
+
+m = np.array([])
+s = np.array([])
+x = np.array([])
+for i in range(len(z[0])):
+  m = np.append(m, np.mean(z[:,i]))
+  s = np.append(s, np.std(z[:,i]))
+  x = np.append(x, i*2)
+
 for i in range(len(z)-1):
-      lostmap = np.append(lostmap, (z[i+1] - z[i]))
-      diff += np.sum((z[i+1] - z[i]))
+      lostmap = np.append(lostmap, (z[i] - m))
+      diff += np.sum((z[i] - m))
       print(diff)
 
 z = z/100/32
@@ -36,17 +45,11 @@ lostmap = lostmap/100/32
 
 print("Lost steps (avg.): ", int(diff/n))
 
-maxdev = np.max(lostmap)
-if maxdev < -np.min(lostmap):
-  maxdev = -np.min(lostmap)
-
 fig = plt.figure()
 fig.set_size_inches(8, 2.5+1)
-plt.title("Reproduzierbarkeitsmessung ($|\delta_{max}| = " + str(round(maxdev*1000, 2)) + "µm, \delta_{avg} = " + str(round(diff/n/100/32*1000, 2)) + "µm$)")
+plt.title("Reproduzierbarkeitsmessung")
 plt.ylabel("Abweichung zur verherigen Messung / mm")
 plt.xlabel("Messung")
 plt.plot([x for x in range(len(lostmap))], lostmap, linestyle="none", marker=".")
 plt.grid(linestyle="--", color="darkgray")
-plt.tight_layout(pad=0.5)
-plt.savefig(data.replace(".txt", "-lost.png"), dpi=150)
 plt.show();

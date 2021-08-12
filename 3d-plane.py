@@ -24,15 +24,17 @@ z = np.array(contents)
 z = -np.float_(z)
 z = z/100/32
 
-	
-x, y = np.meshgrid(range(0, 2*z.shape[1], 2), range(z.shape[0]))
+z = z - np.min(z)
+
+x, y = np.meshgrid(range(0, z.shape[1]), range(z.shape[0]))
 
 print(z)
 
 # show hight map in 3d
 fig = plt.figure()
+fig.set_size_inches(8, 2.5+1)
 ax = fig.add_subplot(111, projection='3d')
-ax.plot_surface(x, y, z)
+ax.plot_surface(x*2, y, z)
 ax.set_ylabel("Measurement n")
 ax.set_xlabel("Position on X-Axis / mm")
 ax.set_zlabel("Height / mm")
@@ -40,12 +42,14 @@ plt.title('Height-Measurement over X-Axis')
 plt.show()
 
 # show hight map in 2d
-plt.figure()
+fig = plt.figure()
+fig.set_size_inches(8, 2.5+1)
 plt.title('Height-Measurement over X-Axis')
-p = plt.imshow(z)
+p = plt.imshow(z, interpolation='none', extent=[0,122,10,0])
 plt.ylabel("Measurement n")
 plt.xlabel("Position on X-Axis / mm")
 cb = plt.colorbar(p)
 cb.ax.set_ylabel('Height / mm', rotation=90)
+plt.tight_layout(pad=0.5)
 plt.savefig(data.replace(".txt", "-heat.png"), dpi=150)
 plt.show()
