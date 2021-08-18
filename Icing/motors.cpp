@@ -1,8 +1,12 @@
 #include <Arduino.h>
 #include "./motors.h"
 
+const uint32_t motorMax[3] = { 5000, 5000, 5000 };
 uint32_t motorsLocation[3];
 uint8_t initialized = 0;
+
+uint32_t motorPos[3];
+uint8_t homed;
 
 void initMotors(void) {
   pinMode(XMIN, INPUT_PULLUP);
@@ -25,7 +29,7 @@ void initMotors(void) {
   pinMode(ZEN, OUTPUT);
   pinMode(ZDIR, OUTPUT);
   digitalWrite(ZEN, HIGH);
-  
+  homed = 0;
 }
 
 void enableMotor(char id) {
@@ -46,7 +50,6 @@ void enableMotor(char id) {
   digitalWrite(pin, LOW);
 }
 
-
 void disableMotors(void) {
   disableMotor('X');
   disableMotor('Y');
@@ -58,12 +61,15 @@ void disableMotor(char id) {
   switch(id) {
     case 'X': 
       pin = XEN;
+      homed &= ~0x01;
       break;
     case 'Y':
       pin = YEN;
+      homed &= ~0x02;
       break;
     case 'Z':
       pin = ZEN;
+      homed &= ~0x04;
       break;
     default:
       return;
@@ -71,8 +77,38 @@ void disableMotor(char id) {
   digitalWrite(pin, HIGH);
 }
 
+
+void moveMotorAbsolute(char id, uint32_t pos, uint16_t dly) {
+  uint32_t currPos = motorPos[id - 'X'];
+  
+  // Never exceed Axis-Maximum
+  if(pos > motorMax[id - 'X']) return;
+
+  // Move motor accordingly
+  if(currPos < pos) {
+    moveMotor(id, 1, pos-currPos, dly);
+  } else if(currPos > pos) {
+    moveMotor(id, 0, currPos-pos, dly);
+  }
+
+  return;
+}
+
 void moveMotor(char id, uint8_t dir, uint32_t steps, uint16_t dly) {
   int pinStep, pinDir;
+  // Home, if Axis has not been homed.
+  if((homed & (0x01 << (id - 'X'))) != (0x01 << (id - 'X'))) {
+    homeMotor(id, dly);
+  }
+
+  // Check if movement is acceptable
+  if(dir == 0 && steps > motorPos[id - 'X']) {
+    return;
+  } else if(dir == 1 && steps+motorPos[id - 'X'] > motorMax[id - 'X']) {
+    return;
+  }
+
+  // Movement acceptable - do some moving
   switch(id) {
     case 'X': 
       pinStep = XSTEP;
@@ -99,6 +135,13 @@ void moveMotor(char id, uint8_t dir, uint32_t steps, uint16_t dly) {
     digitalWrite(pinStep, LOW);
     delayMicroseconds(dly);
   }
+
+  // Recalc Position of Axis
+  if(id == 0) {
+    motorPos[id - 'X'] -= steps;
+  } else if(id == 1) {
+    motorPos[id - 'X'] += steps;
+  }
 }
 
 void homeMotors(void) {
@@ -116,16 +159,22 @@ uint32_t homeMotor(char id, uint16_t dly) {
       pinStep = XSTEP;
       pinDir = XDIR;
       pinEnd = XMIN;
+      motorPos[0] = 0;
+      homed |= 0x01;
       break;
     case 'Y':
       pinStep = YSTEP;
       pinDir = YDIR;
       pinEnd = YMIN;
+      motorPos[1] = 0;
+      homed |= 0x02;
       break;
     case 'Z':
       pinStep = ZSTEP;
       pinDir = ZDIR;
       pinEnd = ZMIN;
+      motorPos[2] = 0;
+      homed |= 0x04;
       break;
     default:
       return 0;

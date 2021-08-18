@@ -58,5 +58,6 @@ void homeMotors();
 uint32_t homeMotor(char id, uint16_t dly);
 
 void moveMotor(char id, uint8_t dir, uint32_t steps, uint16_t dly);
+void moveMotorAbsolute(char id, uint32_t pos, uint16_t dly);
 
 #endif

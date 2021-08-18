@@ -115,10 +115,7 @@ void loop() {
     moveMotor('Z', 0, 2*200*32, 90);
     homeMotor('X', 25);
     for(uint8_t i=0;i<62;i++) {
-      steps = homeMotor('Z', 50);
-      moveMotor('Z', 0, steps, 50);
-      Serial.print((int32_t)steps-(2*200*32));
-      Serial.print("\t");
+      executeZscan();
       moveMotor('X', 0, 200*32, 25);
     }
     Serial.print("\n");
@@ -133,5 +130,30 @@ void printHeading(void) {
     Serial.print(i);
     Serial.print("\t");
   }
-  Serial.print("\n");  
+  Serial.print("\n");
+}
+
+void areaScan(uint8_t ax, uint8_t ay, uint8_t stepx, uint8_t stepy, uint8_t nx, uint8_t ny) {
+  // Probably do some Z-Homing before running @@@
+  
+  // Goto start
+  moveMotorAbsolute('X', ax, 25);
+  moveMotorAbsolute('X', ay, 25);
+
+  // Start scanning
+  for(uint8_t y=0; y<ny; y++) {
+    for(uint8_t x=0; x<nx; x++) {
+      executeZscan();
+      moveMotor('X', 0, stepx, 25);      
+    }
+    moveMotorAbsolute('X', ax, 25);
+    moveMotor('Y', 0, stepy, 10);   
+  }
+}
+
+void executeZscan() {
+  steps = homeMotor('Z', 50);
+  moveMotor('Z', 0, steps, 50);
+  Serial.print((int32_t)steps-(2*200*32));
+  Serial.print("\t");
 }

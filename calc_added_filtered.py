@@ -53,6 +53,12 @@ dif = dif - np.min(dif)
 
 dif2 = np.copy(dif)
 
+for i in range(5):
+  for i in range(len(dif2)-2):
+    i = i+1
+    if abs(dif2[i-1] - dif2[i+1]) < 0.02:
+      dif2[i] = (dif2[i-1] + dif2[i+1]) / 2
+
 # Maybe try some filtering of the values?
 
 # show hight map in 3d
@@ -64,6 +70,7 @@ plt.xlabel("Position auf der X-Achse x / mm")
 #plt.errorbar(x, m, s, linestyle='None', marker='.', label='Kupfer blank')
 #plt.errorbar(x, mp, sp, linestyle='None', marker='.', label='Kupfer+PCB')
 plt.errorbar(x, dif, sp, linestyle='None', marker='.', label='Unfiltered')
+#plt.errorbar(x, dif2, sp, linestyle='None', marker='.', label='Filtered')
 plt.grid(linestyle="--", color="darkgray")
 
 plt.yticks([x/20 for x in range(0, 11)])
