@@ -4,26 +4,37 @@ import csv
 import sys
 
 csv.register_dialect('csv', delimiter='\t', quoting=csv.QUOTE_NONE)
-if(len(sys.argv) < 2):
-    print("NONONONONONONO! Chose file!!");
-    data = "x-sweep.txt"
-else:
-    data = sys.argv[1];
+if(len(sys.argv) < 3):
+    print("Usage: ", sys.argv[0], " [EMPTY TABLE FILE] [ICED TABLE FILE]");
+    quit()
 
-with open(data, encoding="utf8") as f:
+cap = "??"
+if(len(sys.argv) >= 4):
+    cap = sys.argv[3]
+
+with open(sys.argv[1], encoding="utf8") as f:
     reader = csv.reader(f, 'csv')
     contents = list(reader)
+    zempty = np.array(contents)
+    zempty = -np.float_(zempty)
+    zempty = zempty/100/32
 
+
+with open(sys.argv[2], encoding="utf8") as f:
+    reader = csv.reader(f, 'csv')
+    contents = list(reader)
+    ziced = np.array(contents)
+    ziced = -np.float_(ziced)
+    ziced = ziced/100/32
+	
 # make it square
 #z = np.array(contents)
 #z = np.float_(z)
 #mn = np.min(z)
 #for i in range(len(contents[0])-len(contents)):
 #  contents += [[mn] * len(contents[0])]
-z = np.array(contents)
-z = -np.float_(z)
-z = z/100/32
 
+z = ziced - zempty
 z = z - np.min(z)
 
 x, y = np.meshgrid(range(0, z.shape[1]), range(z.shape[0]))
@@ -44,12 +55,12 @@ plt.show()
 # show hight map in 2d
 fig = plt.figure()
 fig.set_size_inches(8, 2.5+1)
-plt.title('Height-Measurement over X-Axis')
+plt.title('Height-Measurement over X-Axis ($C = ' + str(cap) + " nF$)")
 p = plt.imshow(z, interpolation='none', extent=[55,100,45,10])
 plt.ylabel("Position on Y-Axis / mm")
 plt.xlabel("Position on X-Axis / mm")
 cb = plt.colorbar(p)
 cb.ax.set_ylabel('Height / mm', rotation=90)
 plt.tight_layout(pad=0.5)
-plt.savefig(data.replace(".txt", "-heat.png"), dpi=150)
+plt.savefig(sys.argv[2].replace(".txt", "-heat.png"), dpi=150)
 plt.show()

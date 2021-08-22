@@ -1,11 +1,9 @@
 #include <Arduino.h>
 #include "./motors.h"
 
-const uint32_t motorMax[3] = { 5000, 5000, 5000 };
-uint32_t motorsLocation[3];
-uint8_t initialized = 0;
-
+const uint32_t motorMax[3] = { (uint32_t)3200*140, (uint32_t)164*100, (uint32_t)3200*70 };
 uint32_t motorPos[3];
+uint8_t initialized = 0;
 uint8_t homed;
 
 void initMotors(void) {
@@ -86,25 +84,30 @@ void moveMotorAbsolute(char id, uint32_t pos, uint16_t dly) {
 
   // Move motor accordingly
   if(currPos < pos) {
-    moveMotor(id, 1, pos-currPos, dly);
+    return moveMotor(id, 0, pos-currPos, dly);
   } else if(currPos > pos) {
-    moveMotor(id, 0, currPos-pos, dly);
+    return moveMotor(id, 1, currPos-pos, dly);
   }
-
-  return;
 }
 
 void moveMotor(char id, uint8_t dir, uint32_t steps, uint16_t dly) {
   int pinStep, pinDir;
   // Home, if Axis has not been homed.
+  /*Serial.print(id);
+  Serial.print(" is at ");
+  Serial.print(motorPos[id - 'X']);
+  Serial.print(" should move by ");
+  Serial.print(steps);
+  Serial.print('\n');*/
+  
   if((homed & (0x01 << (id - 'X'))) != (0x01 << (id - 'X'))) {
     homeMotor(id, dly);
   }
 
   // Check if movement is acceptable
-  if(dir == 0 && steps > motorPos[id - 'X']) {
+  if(dir == 1 && steps > motorPos[id - 'X']) {
     return;
-  } else if(dir == 1 && steps+motorPos[id - 'X'] > motorMax[id - 'X']) {
+  } else if(dir == 0 && steps+motorPos[id - 'X'] > motorMax[id - 'X']) {
     return;
   }
 
@@ -125,8 +128,18 @@ void moveMotor(char id, uint8_t dir, uint32_t steps, uint16_t dly) {
     default:
       return;
   }
-  steps = steps;
-  enableMotor(id);
+
+  // Recalc Position of Axis
+  if(dir == 1) {
+    motorPos[id - 'X'] -= steps;
+    //Serial.print("Lowered Axis to ");
+    //Serial.print(motorPos[id - 'X']);
+  } else if(dir == 0) {
+    motorPos[id - 'X'] += steps;
+    //Serial.print("Increased Axis to ");
+    //Serial.print(motorPos[id - 'X']);
+  }  
+  // Move it
   digitalWrite(pinDir, dir);
   while(steps > 0) {
     steps--;
@@ -134,13 +147,6 @@ void moveMotor(char id, uint8_t dir, uint32_t steps, uint16_t dly) {
     delayMicroseconds(dly);
     digitalWrite(pinStep, LOW);
     delayMicroseconds(dly);
-  }
-
-  // Recalc Position of Axis
-  if(id == 0) {
-    motorPos[id - 'X'] -= steps;
-  } else if(id == 1) {
-    motorPos[id - 'X'] += steps;
   }
 }
 

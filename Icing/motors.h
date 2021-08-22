@@ -47,6 +47,9 @@
 
 #define X_STEPS_PER_MM  3200
 #define Y_STEPS_PER_MM  164
+#define Z_STEPS_PER_MM  3200
+
+const uint32_t stepsPerMm[3] = { X_STEPS_PER_MM, Y_STEPS_PER_MM, Z_STEPS_PER_MM };
 
 void initMotors(void);
 
