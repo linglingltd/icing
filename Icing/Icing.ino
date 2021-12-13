@@ -155,9 +155,17 @@ void handleSerial(void) {
     } else if(0 == strcmp(rcv, "SCAN")) {
       Serial.print("Exec. area scan.\n");
       areaScan((uint32_t)3200*55, (uint32_t)164*10, (uint32_t)3200, (uint32_t)164, 45, 30);
-    }  else if(0 == strcmp(rcv, "FASTSCAN")) {
+    } else if(0 == strcmp(rcv, "FASTSCAN")) {
       Serial.print("Exec. area scan.\n");
       areaScan((uint32_t)3200*55, (uint32_t)164*10, (uint32_t)3200*5, (uint32_t)164*5, 10, 8);
+      Serial.print("\n\n");
+    } else if(0 == strcmp(rcv, "FASTSCANL")) {
+      Serial.print("Exec. area scan.\n");
+      areaScan((uint32_t)3200*57, (uint32_t)164*10, (uint32_t)3200, (uint32_t)82*5, 10, 15);
+      Serial.print("\n\n");
+    } else if(0 == strcmp(rcv, "FASTSCANR")) {
+      Serial.print("Exec. area scan.\n");
+      areaScan((uint32_t)3200*+62, (uint32_t)164*10, (uint32_t)3200*3, (uint32_t)82*5, 13, 15);
       Serial.print("\n\n");
     } else if(0 == strcmp(rcv, "P=1")) {
       digitalWrite(PELTIER, HIGH);
@@ -211,14 +219,17 @@ void areaScan(uint32_t ax, uint32_t ay, uint32_t stepx, uint32_t stepy, uint8_t 
   // Start scanning
   for(uint8_t y=0; y<ny; y++) {
     if(y != 0) {
-      moveMotorAbsolute('X', ax, 25);
       moveMotor('Y', 0, stepy, 100);
+      moveMotorAbsolute('X', ax, 25); // Do this last due to wobble on y.
     }
     for(uint8_t x=0; x<nx; x++) {
       if(x != 0) moveMotor('X', 0, stepx, 25);
       executeZscan();
     } 
   }
+  
+  moveMotorAbsolute('X', 10*X_STEPS_PER_MM, 25);
+  moveMotorAbsolute('Y', 10*Y_STEPS_PER_MM, 25);
 }
 
 void executeZscan() {
