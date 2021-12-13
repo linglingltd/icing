@@ -40,6 +40,10 @@ for i in range(len(z[0])):
 #m = m - np.min(m);
 #mp = mp - np.min(mp);
 
+m *= 1000
+s *= 1000
+mp *= 1000
+sp *= 1000
 
 for i in range(len(x)):
 	print(x[i], ": (", round(m[i], 2), " +- ", round(s[i], 4), ") mm");
@@ -59,14 +63,14 @@ dif2 = np.copy(dif)
 fig = plt.figure()
 fig.set_size_inches(8, 2.5+1)
 plt.title("Differenzielle Höhenvermessung ($n = " + str(len(z)-number_of_pcb_measures) + "_{Basis}/" + str(number_of_pcb_measures) + "_{Erhöhung}$)")
-plt.ylabel("Gemessene Höhendifferenz $\delta_z$ / mm")
+plt.ylabel("Gemessene Höhendifferenz $\delta_z$ / µm")
 plt.xlabel("Position auf der X-Achse x / mm")
 #plt.errorbar(x, m, s, linestyle='None', marker='.', label='Kupfer blank')
 #plt.errorbar(x, mp, sp, linestyle='None', marker='.', label='Kupfer+PCB')
 plt.errorbar(x, dif, sp, linestyle='None', marker='.', label='Unfiltered')
 plt.grid(linestyle="--", color="darkgray")
-
-plt.yticks([x/20 for x in range(0, 11)])
+plt.ylim(0, 250)
+plt.yticks([x*25 for x in range(0, 11)])
 plt.tight_layout(pad=0.5)
 plt.legend(loc="upper left")
 plt.savefig(data.replace(".txt", "-delta.png"), dpi=150)

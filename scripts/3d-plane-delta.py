@@ -35,11 +35,11 @@ with open(sys.argv[2], encoding="utf8") as f:
 #  contents += [[mn] * len(contents[0])]
 
 z = ziced - zempty
-z = z - np.min(z)
+#z = z - np.min(z)
 
 x, y = np.meshgrid(range(0, z.shape[1]), range(z.shape[0]))
 
-print(z)
+print(np.min(z), np.max(z), np.mean(z), np.std(z))
 
 # show hight map in 3d
 fig = plt.figure()
@@ -50,17 +50,19 @@ ax.set_ylabel("Measurement n")
 ax.set_xlabel("Position on X-Axis / mm")
 ax.set_zlabel("Height / mm")
 plt.title('Height-Measurement over X-Axis')
-plt.show()
+#plt.show()
 
 # show hight map in 2d
 fig = plt.figure()
-fig.set_size_inches(8, 2.5+1)
-plt.title('Height-Measurement over X-Axis ($C = ' + str(cap) + " nF$)")
+fig.set_size_inches(6, 2.5+1)
+plt.title("Height-Measurement over X-Axis ($\delta h_{ice} = " + str(round(np.mean(z),3)) + " \pm " + str(round(np.std(z),3)) + " mm$, $C = " + str(cap) + " nF$)")
 p = plt.imshow(z, interpolation='none', extent=[55,100,45,10])
 plt.ylabel("Position on Y-Axis / mm")
 plt.xlabel("Position on X-Axis / mm")
+
 cb = plt.colorbar(p)
 cb.ax.set_ylabel('Height / mm', rotation=90)
+plt.clim(0, 2.5)
 plt.tight_layout(pad=0.5)
 plt.savefig(sys.argv[2].replace(".txt", "-heat.png"), dpi=150)
-plt.show()
+#plt.show()
